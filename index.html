@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LANCAR VENDAS</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤑</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --bg-dark: #0f1016; 
+            --bg-card: #1b1d29; 
+            --text-main: #ffffff; 
+            --text-muted: #8b9bb4; 
+            --gold: #ffd700; 
+            --green: #00e676; 
+            --blue: #2979ff; 
+            --border: #2a2d3e;
+        }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Montserrat', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 50%, #1f2233 0%, #0f1016 80%);
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .login-box h1 {
+            margin: 0 0 10px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .login-box h1 span {
+            color: var(--gold);
+        }
+
+        .login-box p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            background: #111219;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--blue);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 230, 118, 0.5);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #status-msg {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: none;
+        }
+
+        .success { color: var(--green); }
+        .error { color: #ff1744; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h1>Lançamento <span>AMMO</span></h1>
+        <p>Registre sua venda do dia abaixo</p>
+
+        <form id="form-venda">
+            <div class="input-group">
+                <label for="vendedor">Colaborador(a)</label>
+                <select id="vendedor" required>
+                    <option value="" disabled selected>Selecione seu nome...</option>
+                    </select>
+            </div>
+
+            <div class="input-group">
+                <label for="valor">Valor da Venda (R$)</label>
+                <input type="number" id="valor" step="0.01" min="0.10" placeholder="Ex: 1500,00" required>
+            </div>
+
+            <button type="submit" id="btn-enviar">Lançar Venda</button>
+        </form>
+
+        <div id="status-msg"></div>
+    </div>
+
+    <script>
+        // 1. COLOQUE O MESMO LINK DO SEU RANKING AQUI
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx7pA6OD7MDhRbi6JROMXmV1zD5zPj-f48XBSIgfzXnS-NJUY5euexue_aOyXgpGjXc/exec"; 
+
+        // 2. Lista de colaboradores (A mesma do painel principal)
+        const equipe = [
+            "ADRIANA VITORELLI", "PATRICIA", "GRACIELE", "RODRIGO", 
+            "BEATRIZ", "GEOVANNA", "CAROLINA", "DIENE", "BIANCA", 
+            "VIVIANE", "GABRIELLY", "SIMONE", "JÉSSICA", "JOYCE", "GISELI", 
+            "CAMILA INGRA", "NAIR", "FERNANDA", "MILLENY", "ANDERSON", "WEVERTON"
+        ];
+
+        // 3. Preenche o Select com os nomes em ordem alfabética
+        const selectVendedor = document.getElementById('vendedor');
+        equipe.sort().forEach(nome => {
+            let option = document.createElement('option');
+            option.value = nome;
+            option.textContent = nome;
+            selectVendedor.appendChild(option);
+        });
+
+        // 4. Lógica de envio do formulário
+        document.getElementById('form-venda').addEventListener('submit', function(e) {
+            e.preventDefault(); // Impede a página de recarregar
+            
+            const vendedor = document.getElementById('vendedor').value;
+            const valor = document.getElementById('valor').value;
+            const btn = document.getElementById('btn-enviar');
+            const statusMsg = document.getElementById('status-msg');
+
+            // Feedback visual de carregamento
+            btn.disabled = true;
+            btn.textContent = "LANÇANDO...";
+            statusMsg.style.display = "none";
+
+            // Envia os dados para o Google Apps Script
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                // Usa text/plain para evitar bloqueio de CORS no Google Script
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ vendedor: vendedor, valor: valor })
+            })
+            .then(response => {
+                // Se o Google Script receber com sucesso
+                statusMsg.textContent = "✅ Venda lançada com sucesso!";
+                statusMsg.className = "success";
+                statusMsg.style.display = "block";
+                
+                // Limpa apenas o valor (mantém o nome selecionado para facilitar próximos lançamentos)
+                document.getElementById('valor').value = ""; 
+            })
+            .catch(error => {
+                statusMsg.textContent = "❌ Erro ao lançar. Tente novamente.";
+                statusMsg.className = "error";
+                statusMsg.style.display = "block";
+                console.error("Erro:", error);
+            })
+            .finally(() => {
+                // Restaura o botão
+                btn.disabled = false;
+                btn.textContent = "Lançar Venda";
+            });
+        });
+    </script>
+</body>
+</html>
